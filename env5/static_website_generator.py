@@ -8,6 +8,7 @@ HTML_TEMPLATE = """
     <meta charset="UTF-8">
     <title>{title}</title>
     <style>
+    
         body {{ font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }}
         h1, h2, h3 {{ color: #333; }}
         a {{ color: #007acc; }}
