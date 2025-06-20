@@ -1,0 +1,67 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+def load_sales_data(file_path):
+    if not os.path.exists(file_path) or not file_path.endswith('.csv'):
+        print(" Invalid file path.")
+        return None
+
+    try:
+        df = pd.read_csv(file_path)
+        print(" Sales data loaded successfully.")
+        return df
+    except Exception as e:
+        print(f" Failed to read CSV: {e}")
+        return None
+
+def summarize_data(df):
+    print("\n Sales Summary:\n")
+    
+    if 'Revenue' in df.columns:
+        print(f" Total Revenue: ₹{df['Revenue'].sum():,.2f}")
+    
+    if 'Product' in df.columns and 'Revenue' in df.columns:
+        print("\n Revenue by Product:")
+        print(df.groupby('Product')['Revenue'].sum().sort_values(ascending=False))
+
+    if 'Region' in df.columns and 'Revenue' in df.columns:
+        print("\n Revenue by Region:")
+        print(df.groupby('Region')['Revenue'].sum().sort_values(ascending=False))
+
+def plot_charts(df):
+    sns.set(style="whitegrid")
+
+    if 'Product' in df.columns and 'Revenue' in df.columns:
+        plt.figure(figsize=(10, 6))
+        sns.barplot(data=df, x='Product', y='Revenue', estimator=sum, ci=None)
+        plt.title("Total Revenue by Product")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig("revenue_by_product.png")
+        print(" Saved: revenue_by_product.png")
+
+    if 'Region' in df.columns and 'Revenue' in df.columns:
+        plt.figure(figsize=(8, 6))
+        region_data = df.groupby('Region')['Revenue'].sum()
+        plt.pie(region_data, labels=region_data.index, autopct='%1.1f%%', startangle=140)
+        plt.title("Revenue Distribution by Region")
+        plt.axis('equal')
+        plt.tight_layout()
+        plt.savefig("revenue_by_region.png")
+        print(" Saved: revenue_by_region.png")
+
+def main():
+    print(" Sales Report Generator\n")
+    file_path = input("Enter the full path of the sales CSV file: ").strip()
+    
+    df = load_sales_data(file_path)
+    if df is None:
+        return
+
+    summarize_data(df)
+    plot_charts(df)
+
+if __name__ == "__main__":
+    main()

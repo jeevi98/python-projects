@@ -1,0 +1,44 @@
+import json
+import os
+
+def validate_and_format_json(input_source, is_file=True):
+    try:
+        if is_file:
+            if not os.path.exists(input_source) or not input_source.endswith(".json"):
+                print(" Invalid file path.")
+                return
+            with open(input_source, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        else:
+            data = json.loads(input_source)
+
+        formatted_json = json.dumps(data, indent=4, ensure_ascii=False)
+        print("\n Valid JSON!\n")
+        print(formatted_json)
+
+        if is_file:
+            output_file = os.path.splitext(input_source)[0] + "_formatted.json"
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(formatted_json)
+            print(f"\n Formatted JSON saved to: {output_file}")
+
+    except json.JSONDecodeError as e:
+        print(f"\n JSON is invalid:\n{e}")
+    except Exception as e:
+        print(f"\n❌Unexpected error: {e}")
+
+def main():
+    print(" JSON Formatter & Validator\n")
+    choice = input("Choose input type - (1) File or (2) Paste JSON: ").strip()
+
+    if choice == "1":
+        file_path = input("Enter path to the JSON file: ").strip()
+        validate_and_format_json(file_path, is_file=True)
+    elif choice == "2":
+        raw_json = input("Paste JSON string:\n")
+        validate_and_format_json(raw_json, is_file=False)
+    else:
+        print(" Invalid choice.")
+
+if __name__ == "__main__":
+    main()

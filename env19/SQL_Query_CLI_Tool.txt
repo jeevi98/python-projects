@@ -1,0 +1,69 @@
+import sqlite3
+import mysql.connector
+from tabulate import tabulate
+
+def connect_sqlite(db_path):
+    try:
+        conn = sqlite3.connect(db_path)
+        print(f" Connected to SQLite DB: {db_path}")
+        return conn
+    except Exception as e:
+        print(f" SQLite connection error: {e}")
+        return None
+
+def connect_mysql(host, user, password, database):
+    try:
+        conn = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database
+        )
+        print(f" Connected to MySQL DB: {database}")
+        return conn
+    except Exception as e:
+        print(f" MySQL connection error: {e}")
+        return None
+
+def run_query(conn):
+    cursor = conn.cursor()
+    while True:
+        query = input("\nSQL> ").strip()
+        if query.lower() in ["exit", "quit"]:
+            print(" Exiting SQL CLI.")
+            break
+        try:
+            cursor.execute(query)
+            if query.lower().startswith("select"):
+                rows = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+                print(tabulate(rows, headers=columns, tablefmt="grid"))
+            else:
+                conn.commit()
+                print(f" Query executed. Rows affected: {cursor.rowcount}")
+        except Exception as e:
+            print(f" Error: {e}")
+
+def main():
+    print(" SQL Query CLI Tool\n")
+    db_type = input("Choose DB type - (1) SQLite or (2) MySQL: ").strip()
+
+    if db_type == "1":
+        db_path = input("Enter path to SQLite DB file (e.g., data.db): ").strip()
+        conn = connect_sqlite(db_path)
+    elif db_type == "2":
+        host = input("MySQL Host (e.g., localhost): ").strip()
+        user = input("MySQL Username: ").strip()
+        password = input("MySQL Password: ").strip()
+        database = input("MySQL Database Name: ").strip()
+        conn = connect_mysql(host, user, password, database)
+    else:
+        print(" Invalid choice.")
+        return
+
+    if conn:
+        run_query(conn)
+        conn.close()
+
+if __name__ == "__main__":
+    main()

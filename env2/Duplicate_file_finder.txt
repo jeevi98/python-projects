@@ -1,0 +1,65 @@
+import os
+import hashlib
+
+def get_file_hash(file_path):
+   
+    hasher = hashlib.sha256()
+    try:
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+    except Exception as e:
+        print(f" Could not hash {file_path}: {e}")
+        return None
+
+def find_duplicates(folder_path):
+    hash_map = {}  # hash -> list of file paths
+    duplicates = []
+
+    for dirpath, _, filenames in os.walk(folder_path):
+        for filename in filenames:
+            file_path = os.path.join(dirpath, filename)
+            file_hash = get_file_hash(file_path)
+
+            if not file_hash:
+                continue  
+
+            if file_hash in hash_map:
+                duplicates.append((file_path, hash_map[file_hash][0])) 
+            else:
+                hash_map[file_hash] = [file_path]
+    
+    return duplicates
+
+def main():
+    folder = input("Enter the full path of the folder to scan for duplicates: ").strip()
+
+    if not os.path.exists(folder) or not os.path.isdir(folder):
+        print(" Invalid folder path.")
+        return
+
+    print("\n Scanning for duplicate files...")
+    duplicates = find_duplicates(folder)
+
+    if not duplicates:
+        print("No duplicate files found.")
+    else:
+        print(f"\n Found {len(duplicates)} duplicate files:")
+        for dup, orig in duplicates:
+            print(f"- Duplicate: {dup}\n  Original: {orig}\n")
+
+        choice = input("Do you want to delete all duplicate files? (yes/no): ").strip().lower()
+        if choice == "yes":
+            for dup, _ in duplicates:
+                try:
+                    os.remove(dup)
+                    print(f" Deleted: {dup}")
+                except Exception as e:
+                    print(f"Could not delete {dup}: {e}")
+            print("\n Duplicate files removed.")
+        else:
+            print(" No files were deleted.")
+
+if __name__ == "__main__":
+    main()
